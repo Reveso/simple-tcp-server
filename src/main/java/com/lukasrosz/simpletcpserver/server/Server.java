@@ -1,18 +1,13 @@
 package com.lukasrosz.simpletcpserver.server;
 
 import com.lukasrosz.simpletcpserver.connetion.ServerConnection;
-import com.sun.xml.internal.ws.Closeable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.xml.ws.WebServiceException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
