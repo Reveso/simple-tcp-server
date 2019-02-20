@@ -1,0 +1,3 @@
+com\lukasrosz\simpletcpserver\server\Server.class
+com\lukasrosz\simpletcpserver\connetion\ServerConnection.class
+com\lukasrosz\simpletcpserver\Main.class
