@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.lukasrosz</groupId>
-    <artifactId>simple-tcp-server</artifactId>
+    <artifactId>simple-tcp-simpleTCPServer</artifactId>
     <version>1.0.1</version>
 
     <dependencies>
