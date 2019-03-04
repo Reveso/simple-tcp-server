@@ -1,18 +1,28 @@
 package com.lukasrosz.simpletcpserver;
 
+import com.lukasrosz.simpletcpserver.config.Configuration;
 import com.lukasrosz.simpletcpserver.server.Server;
-import com.lukasrosz.simpletcpserver.server.SimpleTCPServer;
+import lombok.extern.log4j.Log4j;
 
-import java.util.ResourceBundle;
+import java.util.Scanner;
 
+@Log4j
 public class Main {
 
     public static void main(String[] args) {
-        String resourceName = "serverPort";
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("config");
-        int serverPort = Integer.parseInt((resourceBundle.getString(resourceName)));
 
-        Server simpleTCPServer = new SimpleTCPServer(serverPort);
-        simpleTCPServer.startServer();
+        Server simpleTCPServer = Configuration.getServer();
+
+        Thread serverThread = new Thread(simpleTCPServer);
+        serverThread.start();
+
+        Scanner scanner = new Scanner(System.in);
+        while(true) {
+            String cmd = scanner.nextLine();
+            if(cmd.equals("quit")) {
+                simpleTCPServer.shutdown();
+                break;
+            }
+        }
     }
 }

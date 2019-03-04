@@ -1,4 +1,4 @@
-package com.lukasrosz.simpletcpserver.packet;
+package com.lukasrosz.simpletcpserver.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @ToString
-public class TCPPacket {
+public class Message {
     private String originAddress;
     private int originPort;
     private Date receiveDate;

@@ -1,76 +1,77 @@
 package com.lukasrosz.simpletcpserver.server;
 
 import com.lukasrosz.simpletcpserver.server.connetion.ConnectionsManager;
-import lombok.Getter;
-import lombok.Setter;
+import com.lukasrosz.simpletcpserver.server.connetion.ConnectionsManagerImpl;
 import lombok.ToString;
+import lombok.extern.log4j.Log4j;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-@Getter
-@Setter
+@Log4j
 @ToString
 public class SimpleTCPServer implements Server {
+    private final int TIMEOUT_MS = 10000;
+    private boolean shutdown = false;
+
     private ServerSocket serverSocket;
-    private int serverPort;
-
-    private ConnectionsManager connectionsManager;
-    private ExecutorService connectionsExecutor;
-
+    private final ConnectionsManager connectionsManager;
 
     public SimpleTCPServer(int serverPort) {
-        this.serverPort = serverPort;
+        createServerSocket(serverPort);
+        connectionsManager = new ConnectionsManagerImpl(false);
     }
 
-    private boolean createServerSocket() {
+    private void createServerSocket(int serverPort) {
+        log.info("Starting server on port: " + serverPort);
         try {
-            System.out.println("Starting server on port: " + serverPort);
             serverSocket = new ServerSocket(serverPort);
-
         } catch (IOException e) {
-            System.err.println("Error during server startup on port:\n\t" + serverPort + "\n\t" + e);
-            return false;
-//            e.printStackTrace();
-        }
-
-        System.out.println("SimpleTCPServer started successfully: " + serverSocket);
-        return true;
-    }
-
-    @Override
-    public void startServer() {
-        if (!createServerSocket()) {
+            log.fatal("Error during server startup on port: " + serverPort, e);
             return;
         }
 
-        connectionsManager = new ConnectionsManager(true);
-        connectionsExecutor = Executors.newCachedThreadPool();
+        log.info("SimpleTCPServer started successfully: " + serverSocket);
+    }
+
+    @Override
+    public void run() {
+        if (serverSocket == null) {
+            log.fatal("Server was not properly initialized");
+            return;
+        }
+
+        connectionsManager.scheduleClosedConnectionsRemovalTask(5, TimeUnit.MINUTES);
 
         try {
             while (true) {
-                connectionsManager.handleNewConnection(serverSocket, connectionsExecutor);
+                log.info("Awaiting connection");
+                connectionsManager.handleNewConnection(serverSocket);
             }
         } catch (IOException e) {
-            System.err.println("SimpleTCPServer exception:\n\t" + serverSocket + "\n\t" + e);
-//            e.printStackTrace();
+            if(!shutdown)
+                log.fatal(serverSocket, e);
         } finally {
-            shutdownServer();
+            if(!shutdown)
+                performShutdown();
         }
     }
 
-    private void shutdownServer() {
-        System.out.println("Terminating server: " + serverSocket);
+    @Override
+    public void shutdown() {
+        shutdown = true;
+        performShutdown();
+    }
 
+    private void performShutdown() {
+        log.info("Terminating server: " + serverSocket);
+
+        connectionsManager.shutdown();
         try {
-            connectionsManager.shutdownConnectionHandler();
-            connectionsExecutor.shutdownNow();
             serverSocket.close();
         } catch (IOException e) {
-            System.err.println("Error during server termination:\n\t" + serverSocket + "\n\t" + e);
-//                e.printStackTrace();
+            log.error("Error during server termination: " + serverSocket, e);
         }
     }
 
